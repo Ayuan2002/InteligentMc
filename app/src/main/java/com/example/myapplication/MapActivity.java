@@ -32,10 +32,13 @@ import com.baidu.navisdk.adapter.IBNTTSManager;
 import com.baidu.navisdk.adapter.IBaiduNaviManager;
 import com.baidu.navisdk.adapter.struct.BNTTsInitConfig;
 import com.baidu.navisdk.adapter.struct.BNaviInitConfig;
+import com.example.myapplication.entity.Mc_cover;
 import com.example.myapplication.listener.MyLocationListener;
+import com.example.myapplication.util.HttpPostUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements LocationCallback {
     private BaiduMap mBaiduMap = null;
@@ -44,12 +47,11 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
     MyLocationListener myListener;
     LocationClient mLocationClient = null;
     private Button to_navi=null;
-    private double markerLatitude=29.055444; //纬度
-    private double markerLongitude=111.668724;//经度
     private double currentLatitude=0.0;
     private double currentLongitude=0.0;
     private ImageButton ibLocation;
-    private Marker marker=null;
+    private Mc_cover mc;
+    private HttpPostUtil util;
     Dialog dialog=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +59,7 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
         setContentView(R.layout.activity_map);
         initView();
         initLocation();
-        LatLng point = new LatLng(markerLatitude, markerLongitude);
-        BitmapDescriptor bitmap = BitmapDescriptorFactory
-                .fromResource(R.drawable.icon_marka_myself);
-        //构建MarkerOption，用于在地图上添加Marker
-        OverlayOptions option = new MarkerOptions()
-                .position(point)
-                .zIndex(9)
-                .clickable(true)
-                .icon(bitmap);
-        //在地图上添加Marker，并显示
-        //Log.d("Map","marker已经添加");
-        marker = (Marker) mBaiduMap.addOverlay(option);
+
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -159,7 +150,7 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
             @Override
             public void onClick(View v) {
                 //到导航页面
-                startNavigation();
+
             }
         });
         mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
@@ -174,7 +165,7 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
             }
         });
     }
-    public void startNavigation(){
+    public void startNavigation(double targetLatitude,double targetLongitude){
         try {
             BNRoutePlanNode sNode = new BNRoutePlanNode.Builder()
                     .latitude(currentLatitude)
@@ -183,8 +174,8 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
                     .description("自己")
                     .build();
             BNRoutePlanNode eNode = new BNRoutePlanNode.Builder()
-                    .latitude(markerLatitude)
-                    .longitude(markerLongitude)
+                    .latitude(targetLatitude)
+                    .longitude(targetLongitude)
                     .name("终点")
                     .description("井盖")
                     .build();
@@ -289,6 +280,13 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
         Log.d("MapActivity", "Latitude: " + latitude + ", Longitude: " + longitude);
         currentLatitude=latitude;
         currentLongitude=longitude;
+    }
+    public void getMc_coverFromService(){
+        mc=util.getById();
+        MarkerOptions options;
+        LatLng latLng=new LatLng(mc.getLatitude(),mc.getLongitude());
+        options=new MarkerOptions().zIndex(9).icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marka_myself));
+        mBaiduMap.addOverlay(options);
     }
 }
 

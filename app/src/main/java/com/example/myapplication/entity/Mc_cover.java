@@ -2,25 +2,27 @@ package com.example.myapplication.entity;
 
 public class Mc_cover {
     private String ID;
-    private char cover_state;
-    private float power_state;
-    private char open_state;
-    private float waterPosition_state;
-    private float temperature_state;
-    private float moisture_state;
-    private float gas_state;
+    private double longitude;
+    private double latitude;
+    private double water_level;
+    private double harmful_gas_concentration;
+    private double pitch_angle;
+    private double roll_angle;
+    private double yaw_angle;
 
-    public Mc_cover(String ID, char cover_state, float power_state, char open_state, float waterPosition_state, float temperature_state, float moisture_state, float gas_state, double latitude, double longitude) {
+    public Mc_cover(String ID, double longitude, double latitude, double water_level, double harmful_gas_concentration, double pitch_angle, double roll_angle, double yaw_angle) {
         this.ID = ID;
-        this.cover_state = cover_state;
-        this.power_state = power_state;
-        this.open_state = open_state;
-        this.waterPosition_state = waterPosition_state;
-        this.temperature_state = temperature_state;
-        this.moisture_state = moisture_state;
-        this.gas_state = gas_state;
-        this.latitude = latitude;
         this.longitude = longitude;
+        this.latitude = latitude;
+        this.water_level = water_level;
+        this.harmful_gas_concentration = harmful_gas_concentration;
+        this.pitch_angle = pitch_angle;
+        this.roll_angle = roll_angle;
+        this.yaw_angle = yaw_angle;
+    }
+
+    public Mc_cover() {
+
     }
 
     public String getID() {
@@ -31,60 +33,12 @@ public class Mc_cover {
         this.ID = ID;
     }
 
-    public char getCover_state() {
-        return cover_state;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public void setCover_state(char cover_state) {
-        this.cover_state = cover_state;
-    }
-
-    public float getPower_state() {
-        return power_state;
-    }
-
-    public void setPower_state(float power_state) {
-        this.power_state = power_state;
-    }
-
-    public char getOpen_state() {
-        return open_state;
-    }
-
-    public void setOpen_state(char open_state) {
-        this.open_state = open_state;
-    }
-
-    public float getWaterPosition_state() {
-        return waterPosition_state;
-    }
-
-    public void setWaterPosition_state(float waterPosition_state) {
-        this.waterPosition_state = waterPosition_state;
-    }
-
-    public float getTemperature_state() {
-        return temperature_state;
-    }
-
-    public void setTemperature_state(float temperature_state) {
-        this.temperature_state = temperature_state;
-    }
-
-    public float getMoisture_state() {
-        return moisture_state;
-    }
-
-    public void setMoisture_state(float moisture_state) {
-        this.moisture_state = moisture_state;
-    }
-
-    public float getGas_state() {
-        return gas_state;
-    }
-
-    public void setGas_state(float gas_state) {
-        this.gas_state = gas_state;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public double getLatitude() {
@@ -95,14 +49,43 @@ public class Mc_cover {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public double getWater_level() {
+        return water_level;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setWater_level(double water_level) {
+        this.water_level = water_level;
     }
 
-    private double latitude;
-    private double longitude;
+    public double getHarmful_gas_concentration() {
+        return harmful_gas_concentration;
+    }
+
+    public void setHarmful_gas_concentration(double harmful_gas_concentration) {
+        this.harmful_gas_concentration = harmful_gas_concentration;
+    }
+
+    public double getPitch_angle() {
+        return pitch_angle;
+    }
+
+    public void setPitch_angle(double pitch_angle) {
+        this.pitch_angle = pitch_angle;
+    }
+
+    public double getRoll_angle() {
+        return roll_angle;
+    }
+
+    public void setRoll_angle(double roll_angle) {
+        this.roll_angle = roll_angle;
+    }
+
+    public double getYaw_angle() {
+        return yaw_angle;
+    }
+
+    public void setYaw_angle(double yaw_angle) {
+        this.yaw_angle = yaw_angle;
+    }
 }
