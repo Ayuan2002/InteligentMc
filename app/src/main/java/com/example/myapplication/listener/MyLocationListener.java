@@ -42,7 +42,7 @@ import com.example.myapplication.LocationCallback;
             isFirstLoc = false;
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             MapStatus.Builder builder = new MapStatus.Builder();
-            builder.target(latLng).zoom(20.0f);
+            builder.target(latLng).zoom(15.0f);
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
         }
     }

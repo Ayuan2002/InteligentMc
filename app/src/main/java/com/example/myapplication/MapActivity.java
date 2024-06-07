@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +21,8 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapPoi;
+import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
@@ -33,14 +37,19 @@ import com.baidu.navisdk.adapter.IBaiduNaviManager;
 import com.baidu.navisdk.adapter.struct.BNTTsInitConfig;
 import com.baidu.navisdk.adapter.struct.BNaviInitConfig;
 import com.example.myapplication.entity.Mc_cover;
+import com.example.myapplication.handler.MyThreadHandler;
 import com.example.myapplication.listener.MyLocationListener;
 import com.example.myapplication.util.HttpPostUtil;
+import com.example.myapplication.util.WarnVideoPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class MapActivity extends AppCompatActivity implements LocationCallback {
+
+public class MapActivity extends AppCompatActivity implements LocationCallback , MyThreadHandler.HandlerCallback {
     private BaiduMap mBaiduMap = null;
     private MapView mMapView = null;
     private Button close_dialog=null;
@@ -51,15 +60,37 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
     private double currentLongitude=0.0;
     private ImageButton ibLocation;
     private Mc_cover mc;
-    private HttpPostUtil util;
     Dialog dialog=null;
+    HttpPostUtil util;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private MyThreadHandler myThreadHandler;
+    private Marker manhole=null;
+    private WarnVideoPlayer player;
+    BitmapDescriptor blue=BitmapDescriptorFactory.fromResource(R.drawable.icon_marker_blue);
+    BitmapDescriptor red=BitmapDescriptorFactory.fromResource(R.drawable.icon_marker_red);
+    private TextView dialog_longitude,dialog_latitude,dialog_water_level,dialog_harmful_gas_concentration,
+    dialog_pitch_angle,dialog_roll_angle,dialog_yaw_angle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         initView();
         initLocation();
+        player=new WarnVideoPlayer(this);
+        util=new HttpPostUtil();
+        myThreadHandler=new MyThreadHandler(getMainLooper(),this);
+        executorService.submit(() -> {
+            Log.d("MyThread","后台请求线程启动");
+            while (true){
+                Mc_cover cover = util.getById();
+                Message msg = Message.obtain();
+                msg.what = 1;
+                msg.obj = cover;
+                myThreadHandler.sendMessage(msg);
+                Thread.sleep(5000);
 
+            }
+        });
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -80,6 +111,7 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
         mMapView.onDestroy();
         mBaiduMap.setMyLocationEnabled(false);
         mLocationClient = null;
+        executorService.shutdownNow();
     }
     @Override
     protected void onResume() {
@@ -132,38 +164,47 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
         mMapView = (MapView) findViewById(R.id.bmapView);
         //回到当前定位
         ibLocation = (ImageButton) findViewById(R.id.ib_location);
+        ibLocation.setOnClickListener(v -> {
+            LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+            MapStatus.Builder builder = new MapStatus.Builder();
+            builder.target(latLng).zoom(15.0f);
+            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        });
         mMapView.showScaleControl(false);  // 设置比例尺是否可见（true 可见/false不可见）
         //mMapView.showZoomControls(false);  // 设置缩放控件是否可见（true 可见/false不可见）
         mMapView.removeViewAt(1);// 删除百度地图Logo
         mBaiduMap = mMapView.getMap();
         dialog =new Dialog(this);
         dialog.setContentView(R.layout.map_dialog_layout);
+        dialog_longitude=dialog.findViewById(R.id.longitude);
+        dialog_latitude=dialog.findViewById(R.id.latitude);
+        dialog_harmful_gas_concentration=dialog.findViewById(R.id.harmful_gas_concentration);
+        dialog_water_level=dialog.findViewById(R.id.water_level);
+        dialog_pitch_angle=dialog.findViewById(R.id.pitch_angle);
+        dialog_roll_angle=dialog.findViewById(R.id.roll_angle);
+        dialog_yaw_angle=dialog.findViewById(R.id.yaw_angle);
         close_dialog=dialog.findViewById(R.id.close_dialog);
         to_navi=dialog.findViewById(R.id.to_navigation);
-        close_dialog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
+        close_dialog.setOnClickListener(v -> dialog.dismiss());
+        to_navi.setOnClickListener(v -> {
+            //到导航页面
+            startNavigation(mc.getLatitude(),mc.getLongitude());
         });
-        to_navi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //到导航页面
+        mBaiduMap.setOnMarkerClickListener(marker -> {
+            dialog.setTitle("井盖详情");
 
-            }
+            dialog_longitude.setText(String.valueOf(mc.getLongitude()));
+            dialog_latitude.setText(String.valueOf(mc.getLatitude()));
+            dialog_water_level.setText(String.valueOf(mc.getWater_level()));
+            dialog_harmful_gas_concentration.setText(String.valueOf(mc.getHarmful_gas_concentration()));
+            dialog_pitch_angle.setText(String.valueOf(mc.getPitch_angle()));
+            dialog_roll_angle.setText(String.valueOf(mc.getRoll_angle()));
+            dialog_yaw_angle.setText(String.valueOf(mc.getYaw_angle()));
+            initNavigation();
+            dialog.show();
+            return true;
         });
-        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                Log.d("marker","marker点击事件被调用");
-                LatLng latLng=marker.getPosition();
-                dialog.setTitle("井盖详情");
-                initNavigation();
-                dialog.show();
-                return true;
-            }
-        });
+
     }
     public void startNavigation(double targetLatitude,double targetLongitude){
         try {
@@ -281,12 +322,40 @@ public class MapActivity extends AppCompatActivity implements LocationCallback {
         currentLatitude=latitude;
         currentLongitude=longitude;
     }
-    public void getMc_coverFromService(){
-        mc=util.getById();
-        MarkerOptions options;
-        LatLng latLng=new LatLng(mc.getLatitude(),mc.getLongitude());
-        options=new MarkerOptions().zIndex(9).icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_marka_myself));
-        mBaiduMap.addOverlay(options);
+    public void warning_status(){
+        player.play();
+        LatLng new_position=new LatLng(this.mc.getLatitude(),this.mc.getLongitude());
+        OverlayOptions options=new MarkerOptions().position(new_position).icon(red).zIndex(9);
+        manhole=(Marker) mBaiduMap.addOverlay(options);
+    }
+    public boolean is_need_warning(Mc_cover mc){
+        // 检查水位
+        if (mc.getWater_level() < 10) {
+            return true;
+        }
+        // 检查有害气体浓度
+        if (mc.getHarmful_gas_concentration() > 1200) {
+            return true;
+        }
+        // 检查三轴角度
+        if (Math.abs(mc.getPitch_angle()) > 15 || Math.abs(mc.getRoll_angle()) > 15  || Math.abs(mc.getYaw_angle()) > 15) {
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public void updateUI(Mc_cover mc) {
+        this.mc=mc.clone();
+        if(manhole!=null){
+            manhole.remove();
+        }
+        if(is_need_warning(mc)){
+            warning_status();
+        }else{
+        LatLng new_position=new LatLng(mc.getLatitude(),mc.getLongitude());
+        OverlayOptions options=new MarkerOptions().position(new_position).icon(blue).zIndex(9);
+        manhole=(Marker) mBaiduMap.addOverlay(options);
+        }
     }
 }
 

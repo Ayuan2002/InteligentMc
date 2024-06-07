@@ -13,76 +13,87 @@
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
-                android:text=""
+                android:text="test001"
                 android:textSize="20dp"
                 android:padding="8dp"
                 android:id="@+id/mc_id"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="井盖状态:"
+                android:text="经度："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/cover_state"/>
+                android:id="@+id/longitude"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="电量状态:"
+                android:text="纬度："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/power_state"/>
+                android:id="@+id/latitude"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="开关状态:"
+                android:text="水位信息："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/open_state"/>
+                android:id="@+id/water_level"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="水位信息:"
+                android:text="有害气体浓度："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/water_state"/>
+                android:id="@+id/harmful_gas_concentration"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="湿度信息:"
+                android:text="方向角："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/moisture_state"/>
+                android:id="@+id/pitch_angle"/>
         </TableRow>
         <TableRow>
             <TextView
-                android:text="有害气体浓度:"
+                android:text="横滚角："
                 android:textSize="20dp"
                 android:padding="8dp"/>
             <TextView
                 android:text=""
                 android:textSize="20dp"
                 android:padding="8dp"
-                android:id="@+id/gas_state"/>
+                android:id="@+id/roll_angle"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:text="仰望角："
+                android:textSize="20dp"
+                android:padding="8dp"/>
+            <TextView
+                android:text=""
+                android:textSize="20dp"
+                android:padding="8dp"
+                android:id="@+id/yaw_angle"/>
         </TableRow>
     </TableLayout>
     <LinearLayout
@@ -104,5 +115,4 @@
             android:text="取消"
             android:layout_height="wrap_content"/>
     </LinearLayout>
-
 </LinearLayout>
